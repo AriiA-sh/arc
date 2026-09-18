@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arc Lens — Settings</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; background: #0b0e13; color: #e8eaed;
+      font: 14px system-ui, sans-serif; padding: 20px; min-width: 380px; }
+    h1 { color:#9fc3ff; letter-spacing:.2em; font-size:16px; }
+    label { display:block; margin:14px 0 4px; color:#9aa0a6; }
+    select,input { width:100%; box-sizing:border-box; padding:8px; border-radius:8px;
+      border:1px solid #252b36; background:#0d1016; color:#e8eaed; }
+    .note { color:#9aa0a6; font-size:12px; margin-top:6px; }
+    .save { margin-top:16px; padding:9px; width:100%; border:0; border-radius:8px;
+      background:#4f8cff; color:#fff; font-weight:600; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>ARC LENS · SETTINGS</h1>
+  <label for="aiProvider">AI provider (optional — deterministic rules always run)</label>
+  <select id="aiProvider">
+    <option value="disabled">Disabled</option>
+    <option value="gemini">Gemini</option>
+    <option value="openai">OpenAI</option>
+    <option value="anthropic">Anthropic</option>
+  </select>
+  <label for="apiKey">API key (stored only in your browser, sent only to your provider)</label>
+  <input id="apiKey" type="password" placeholder="sk-…" autocomplete="off" />
+  <label for="network">Network</label>
+  <select id="network">
+    <option value="testnet">Arc Testnet (5042002)</option>
+    <option value="mainnet" disabled>Arc Mainnet (5042 — permissioned, unavailable)</option>
+  </select>
+  <label for="expectedChainId">Expected chain id</label>
+  <input id="expectedChainId" type="number" value="5042002" />
+  <div class="note">Arc Lens never stores private keys or seed phrases. Your API key is local to this browser.</div>
+  <button class="save" id="save">Save</button>
+  <div id="status"></div>
+  <script src="settings.js"></script>
+</body>
+</html>

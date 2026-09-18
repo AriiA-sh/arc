@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Arc Lens Stage 6 harness</title>
+</head>
+<body>
+  <h1>Stage 6 harness</h1>
+  <div id="displayed-address" hidden></div>
+  <p id="wallet" data-status="initializing">wallet initializing…</p>
+  <p id="captured"></p>
+  <p id="risk"></p>
+  <p id="result"></p>
+  <button id="sign">Simulate Approve USDC (unlimited)</button>
+  <button id="transfer">Simulate Transfer USDC</button>
+  <script>
+    // Optional Displayed-vs-Signed mismatch scenario: shows an address on the
+    // page that is NOT the transaction target. ?display=1 enables it.
+    if (new URLSearchParams(location.search).get('display') === '1') {
+      const el = document.getElementById('displayed-address')
+      el.hidden = false
+      el.innerHTML = 'Pool contract: <b class="addr">0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa</b>'
+    }
+    // Mock wallet injection — defines window.ethereum AFTER the extension
+    // injected script has installed its defineProperty trap (document_start).
+    setTimeout(() => {
+      window.ethereum = {
+        isMetaMask: true,
+        chainId: '0x4cef52',
+        request: async ({ method, params }) => {
+          document.getElementById('wallet').dataset.status = 'wallet-requested:' + method
+          if (method === 'eth_chainId') return '0x4cef52'
+          if (method === 'eth_accounts') return ['0x1234abcd1234abcd1234abcd1234abcd1234abcd']
+          if (method === 'eth_sendTransaction') return '0xfakehash'
+          if (method === 'wallet_switchEthereumChain') return null
+          throw new Error('unhandled ' + method)
+        },
+      }
+      document.getElementById('wallet').dataset.status = 'ready'
+    }, 50)
+
+    // Listen for Arc Lens risk results coming back through the page channel.
+    window.addEventListener('message', (ev) => {
+      if (ev.data && ev.data.channel === 'ARCLENS_PAGE' && ev.data.type === 'RISK_RESULT') {
+        document.getElementById('risk').textContent = JSON.stringify({
+          human: ev.data.human,
+          kind: ev.data.kind,
+          severity: ev.data.severity,
+          count: ev.data.count,
+          highlights: ev.data.highlights,
+          findings: ev.data.findings,
+        })
+      }
+    })
+
+    const MAX_UINT = 'ff'.repeat(32)
+
+    document.getElementById('sign').addEventListener('click', async () => {
+      const eth = window.ethereum
+      const to = '0x1111111111111111111111111111111111111111'
+      const data = '0x095ea7b3' + '00'.repeat(12) + '4444444444444444444444444444444444444444' + MAX_UINT
+      try {
+        const res = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: '0x2222222222222222222222222222222222222222', to, value: '0x0', data }],
+        })
+        document.getElementById('result').textContent = 'wallet signed (mock): ' + res
+      } catch (e) {
+        document.getElementById('result').textContent = 'error: ' + e.message
+      }
+    })
+
+    document.getElementById('transfer').addEventListener('click', async () => {
+      const eth = window.ethereum
+      const transfer = '0xa9059cbb' + '00'.repeat(12) + '3333333333333333333333333333333333333333' + '00'.repeat(31) + 'e8d4a51000'
+      try {
+        const res = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: '0x2222222222222222222222222222222222222222', to: '0x1111111111111111111111111111111111111111', value: '0x0', data: transfer }],
+        })
+        document.getElementById('result').textContent = 'wallet signed (mock): ' + res
+      } catch (e) {
+        document.getElementById('result').textContent = 'error: ' + e.message
+      }
+    })
+  </script>
+</body>
+</html>

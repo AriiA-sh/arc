@@ -1,0 +1,32 @@
+{
+  "name": "arc",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "build:extension": "node scripts/build-extension.mjs && node scripts/stage9/check-extension.mjs",
+    "test": "tsx scripts/stage2/fixtures.ts && tsx scripts/stage3/rules.ts && tsx scripts/stage6/full-test.ts && tsx scripts/stage7/overlay-test.ts && tsx scripts/stage8/ai-test.ts && tsx scripts/stage10/chain-test.ts",
+    "test:stage2": "tsx scripts/stage2/fixtures.ts",
+    "test:stage3": "tsx scripts/stage3/rules.ts",
+    "test:stage6": "tsx scripts/stage6/full-test.ts",
+    "test:stage7": "tsx scripts/stage7/overlay-test.ts",
+    "test:stage8": "tsx scripts/stage8/ai-test.ts",
+    "test:stage10": "tsx scripts/stage10/chain-test.ts",
+    "check:extension": "node scripts/stage9/check-extension.mjs",
+    "test:stage7-browser": "node scripts/stage7/browser-e2e.mjs"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.0",
+    "tsx": "^4.23.13",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "viem": "^2.56.8"
+  }
+}

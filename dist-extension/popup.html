@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arc Lens</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { width: 340px; margin: 0; background: #0b0e13; color: #e8eaed;
+      font: 13px system-ui, sans-serif; padding: 14px; }
+    h1 { font-size: 14px; letter-spacing: .25em; margin: 0 0 10px; color: #9fc3ff; }
+    .muted { color: #9aa0a6; }
+    .btn { display:block; width:100%; margin-top:12px; padding:8px; border:0;
+      border-radius:8px; background:#4f8cff; color:#fff; font-weight:600; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>ARC LENS</h1>
+  <div id="arc-popup-root" class="muted">Waiting…</div>
+  <a class="btn" id="arc-open-settings" href="#">Settings</a>
+  <script src="popup.js"></script>
+</body>
+</html>
