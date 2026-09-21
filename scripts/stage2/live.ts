@@ -1,7 +1,6 @@
 import { publicClient } from '../../src/arc/client'
 import { decodeTx } from '../../src/core/decoder/decoder'
 import { makeTokenMetaFetcher } from '../../src/core/decoder/token-meta'
-import { erc20Abi } from '../../src/core/decoder/abis'
 
 const fetchTokenMeta = makeTokenMetaFetcher({
   readContract: (p) => publicClient.readContract({ ...p, args: [] }) as any,

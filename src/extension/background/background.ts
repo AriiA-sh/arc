@@ -165,7 +165,31 @@ function maybeEnrich(summary: RiskSummary, sender: chrome.runtime.MessageSender)
   }).catch(() => {})
 }
 
+/**
+ * Privacy-first (host_permissions are minimal): on sites that are NOT
+ * Arc-owned / localhost, protection is on-demand — the user clicks the action
+ * icon and this injects the observer into the active tab (activeTab + scripting).
+ */
+async function activateCurrentTab(): Promise<{ ok: boolean; error?: string }> {
+  const [tab] = await chrome.tabs?.query?.({ active: true, currentWindow: true })
+  if (!tab?.id) return { ok: false, error: 'no active tab' }
+  const url = tab.url ?? ''
+  if (!/^https?:/i.test(url)) return { ok: false, error: 'unsupported page (chrome://…)' }
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['injected.js'], world: 'MAIN' })
+    // content.js is guarded against double-registration, safe to re-inject.
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'], world: 'ISOLATED' })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: String((e as Error)?.message ?? e) }
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.kind === 'ACTIVATE_TAB') {
+    activateCurrentTab().then(sendResponse)
+    return true
+  }
   if (msg?.kind === 'TX_CAPTURED') {
     // Responses cross a real structured-clone boundary (service worker →
     // content script). decodeTx / viem can produce values that Chrome's

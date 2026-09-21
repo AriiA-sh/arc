@@ -18,7 +18,7 @@ function onRequest(method: string, params: unknown[]) {
 const mockWallet = {
   isMetaMask: true,
   chainId: '0x4cef52',
-  request: async ({ method, params }) => {
+  request: async ({ method }: { method: string }) => {
     if (method === 'eth_chainId') return '0x4cef52'
     if (method === 'eth_accounts') return ['0x2222222222222222222222222222222222222222']
     if (method === 'eth_sendTransaction') return '0xMOCKHASH'

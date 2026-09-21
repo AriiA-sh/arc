@@ -31,11 +31,11 @@
   <label for="network">Network</label>
   <select id="network">
     <option value="testnet">Arc Testnet (5042002)</option>
-    <option value="mainnet" disabled>Arc Mainnet (5042 — permissioned, unavailable)</option>
+    <option value="mainnet">Arc Mainnet (5042 — public)</option>
   </select>
   <label for="expectedChainId">Expected chain id</label>
   <input id="expectedChainId" type="number" value="5042002" />
-  <div class="note">Arc Lens never stores private keys or seed phrases. Your API key is local to this browser.</div>
+  <div class="note">Arc Lens never stores private keys or seed phrases. Your API key is local to this browser. Saving an AI provider makes Chrome ask once for access to that provider's API host only.</div>
   <button class="save" id="save">Save</button>
   <div id="status"></div>
   <script src="settings.js"></script>

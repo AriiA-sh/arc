@@ -99,11 +99,20 @@
     window[INJECTED_FLAG] = true;
     let current = void 0;
     function setEthereum(val) {
+      if (!val || typeof val !== "object") return;
       current = wrapProvider(val, handleRequest);
+    }
+    let preExisting;
+    try {
+      preExisting = window.ethereum;
+    } catch {
+      preExisting = void 0;
     }
     try {
       Object.defineProperty(window, "ethereum", {
-        configurable: true,
+        // non-configurable + non-writable getter: a page cannot delete or
+        // redefine the property to drop out of observation (Stage-b hardening).
+        configurable: false,
         get() {
           return current;
         },
@@ -114,6 +123,16 @@
     } catch {
       const eth = window.ethereum;
       if (eth) setEthereum(eth);
+    }
+    if (preExisting) {
+      setEthereum(preExisting);
+    } else {
+      let tries = 0;
+      const timer = setInterval(() => {
+        const eth = window.ethereum;
+        if (eth && eth !== current) setEthereum(eth);
+        if (current || ++tries > 50) clearInterval(timer);
+      }, 100);
     }
     return true;
   }

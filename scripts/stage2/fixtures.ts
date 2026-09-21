@@ -1,4 +1,4 @@
-import { encodeFunctionData, encodeAbiParameters, parseAbiParameters } from 'viem'
+import { encodeFunctionData } from 'viem'
 import { erc20Abi } from '../../src/core/decoder/abis'
 import { decodeTx } from '../../src/core/decoder/decoder'
 import { MAX_UINT256 } from '../../src/core/decoder/abis'

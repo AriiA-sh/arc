@@ -125,7 +125,7 @@ export function showOverlay(payload: OverlayPayload): void {
       `<b>⚠ Displayed vs Signed mismatch</b>` +
       `<div>${mismatch.reason}</div>` +
       `<div style="margin-top:4px">Page shows: <code>${mismatch.shownAddress}</code>` +
-      (mismatch.shownLabel ? ` (${mismatch.shownLabel})` : '') +
+      (mismatch.shownLabel ? ` (${escapeHtml(mismatch.shownLabel)})` : '') +
       `<br>Wallet asked to sign: <code>${mismatch.signedAddress ?? ''}</code></div>`
   }
 

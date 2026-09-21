@@ -17756,6 +17756,7 @@ var ARC_CHAINS = {
   mainnet: arcMainnet
 };
 var ARC_CHAIN_ID = arcTestnet.id;
+var ARC_MAINNET_CHAIN_ID = arcMainnet.id;
 
 // src/core/decoder/abis.ts
 var erc20Abi2 = [
@@ -18440,7 +18441,24 @@ function maybeEnrich(summary, sender) {
   }).catch(() => {
   });
 }
+async function activateCurrentTab() {
+  const [tab] = await chrome.tabs?.query?.({ active: true, currentWindow: true });
+  if (!tab?.id) return { ok: false, error: "no active tab" };
+  const url = tab.url ?? "";
+  if (!/^https?:/i.test(url)) return { ok: false, error: "unsupported page (chrome://\u2026)" };
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["injected.js"], world: "MAIN" });
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"], world: "ISOLATED" });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message ?? e) };
+  }
+}
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.kind === "ACTIVATE_TAB") {
+    activateCurrentTab().then(sendResponse);
+    return true;
+  }
   if (msg?.kind === "TX_CAPTURED") {
     analyze(msg.method, msg.payload ?? {}).then((summary) => {
       sendResponse(plain({ msg: "RISK_RESULT", ...summary }));

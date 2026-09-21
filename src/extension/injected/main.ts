@@ -66,23 +66,48 @@ export function installProviderInterception(): boolean {
   let current: unknown = undefined
 
   function setEthereum(val: unknown) {
+    if (!val || typeof val !== 'object') return
     current = wrapProvider(val, handleRequest)
+  }
+
+  // Grab whatever provider already exists before we take over the property.
+  let preExisting: unknown
+  try {
+    preExisting = (window as unknown as { ethereum?: unknown }).ethereum
+  } catch {
+    preExisting = undefined
   }
 
   try {
     Object.defineProperty(window, 'ethereum', {
-      configurable: true,
+      // non-configurable + non-writable getter: a page cannot delete or
+      // redefine the property to drop out of observation (Stage-b hardening).
+      configurable: false,
       get() {
         return current
       },
       set(val) {
+        // keep accepting the real provider if the wallet injects late
         setEthereum(val)
       },
     })
   } catch {
-    // property already non-configurable: wrap whatever is there now
+    // property already non-configurable on this page: wrap whatever is there
     const eth = (window as unknown as { ethereum?: unknown }).ethereum
     if (eth) setEthereum(eth)
+  }
+
+  if (preExisting) {
+    setEthereum(preExisting)
+  } else {
+    // The wallet may inject a beat after our document_start script ran.
+    // Poll briefly (best effort; the accessor setter also catches late loads).
+    let tries = 0
+    const timer = setInterval(() => {
+      const eth = (window as unknown as { ethereum?: unknown }).ethereum
+      if (eth && eth !== current) setEthereum(eth)
+      if (current || ++tries > 50) clearInterval(timer)
+    }, 100)
   }
 
   return true

@@ -1,7 +1,4 @@
 (() => {
-  // src/extension/channel.ts
-  var PAGE_CHANNEL = "ARCLENS_PAGE";
-
   // src/extension/content/mismatch.ts
   var ADDR_RE = /(?:0x[0-9a-fA-F]{40})/g;
   function newestFirst(body) {
@@ -173,78 +170,59 @@
   function escapeHtml(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
-  function appendAiExplain(uid, text) {
-    const host = document.getElementById(OVERLAY_ID);
-    const shadow = host?.shadowRoot;
-    if (!host || !shadow || host.dataset.arcUid !== uid) return;
-    const detailsBody = shadow.querySelector(".arc-details-body");
-    if (!detailsBody) return;
-    if (detailsBody.querySelector(".arc-ai")) return;
-    const ai = document.createElement("div");
-    ai.className = "arc-ai";
-    ai.innerHTML = `<b>AI explain</b>${escapeHtml(text)}`;
-    detailsBody.appendChild(ai);
-  }
 
-  // src/extension/plain.ts
-  function plain(value) {
-    return JSON.parse(
-      JSON.stringify(
-        value,
-        (_key, v) => typeof v === "bigint" ? v.toString() : v
-      )
-    );
-  }
-
-  // src/extension/content/content.ts
-  var g = globalThis;
-  if (!g.__arcLensContent) {
-    let onPageMessage = function(event) {
-      const data = event.data;
-      if (!data || typeof data !== "object") return;
-      if (data.channel !== PAGE_CHANNEL || data.type !== "TX_CAPTURED") return;
-      if (event.source !== window) return;
-      const payload = data.payload ?? {};
-      if (payload.tx?.to) pendingTx.set(data.uid, { to: payload.tx.to });
-      chrome.runtime.sendMessage({ kind: "TX_CAPTURED", uid: data.uid, method: data.method, payload: data.payload }).then((res) => {
-        if (res?.msg === "RISK_RESULT") {
-          const info = pendingTx.get(data.uid);
-          if (res.severity === "safe" || res.severity === "warning" || res.severity === "severe") {
-            showOverlay({ summary: res, txTo: info?.to });
-          }
-          window.postMessage({ channel: PAGE_CHANNEL, type: "RISK_RESULT", ...res }, "*");
-          pendingTx.delete(data.uid);
-          chrome.storage.local.set({ lastSummary: plain(res) });
+  // demo/approve-demo.ts
+  var SPENDER_SHOWN = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  var SPENDER_SIGNED = "0x1111111111111111111111111111111111111111";
+  document.body.innerHTML = `
+<div style="display:flex;min-height:100vh;align-items:center;justify-content:center;background:#0e1117">
+  <div style="width:380px;background:#fff;border-radius:16px;padding:22px;font-family:Inter,system-ui,sans-serif;color:#0b0e13">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:50%;background:#2775ca;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">A</div>
+      <div><b style="font-size:15px">ArcSwap</b><div style="font-size:11px;color:#6a7282">Testnet \xB7 arcswap.example</div></div>
+    </div>
+    <h2 style="margin:18px 0 4px;font-size:17px">Approve USDC</h2>
+    <div style="font-size:12px;color:#6a7282">Allow <b>ArcSwap Router</b> to spend your USDC.</div>
+    <div style="margin-top:14px;background:#f4f6f9;border-radius:12px;padding:12px">
+      <div style="font-size:11px;color:#6a7282">Spender contract</div>
+      <div style="font-family:ui-monospace,monospace;font-size:12.5px;color:#0b0e13;margin-top:3px;word-break:break-all">${SPENDER_SHOWN}</div>
+    </div>
+    <div style="margin-top:10px;background:#f4f6f9;border-radius:12px;padding:12px">
+      <div style="font-size:11px;color:#6a7282">Max approval</div>
+      <div style="font-size:13px;font-weight:600;margin-top:3px">Unlimited</div>
+    </div>
+    <button id="demo-confirm" style="margin-top:16px;width:100%;padding:12px;border:0;border-radius:12px;background:#2775ca;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Approve</button>
+  </div>
+</div>`;
+  document.getElementById("demo-confirm").addEventListener("click", () => {
+    const summary = {
+      uid: "arcl-demo0000-00000",
+      human: "Approve token",
+      kind: "erc20_approve",
+      severity: "severe",
+      count: 2,
+      highlights: ["Unlimited approval", "Approval to a plain account"],
+      to: SPENDER_SIGNED,
+      value: "0",
+      findings: [
+        {
+          id: "unlimited-approval",
+          severity: "warning",
+          rule: "Unlimited approval",
+          reason: "This approval may allow 0x1111\u20261111 to spend your token later.",
+          evidence: "allowance set to uint256 max (2^256-1)",
+          limitation: "Arc Lens cannot know whether the spender intends to use the full allowance."
+        },
+        {
+          id: "approve-to-eoa",
+          severity: "severe",
+          rule: "Approval to a plain account",
+          reason: "The page calls it a \u201Ccontract\u201D, but the target has no contract code (it is a plain wallet).",
+          evidence: "getCode(0x1111\u20261111) returned 0x on chain",
+          limitation: "An EOA spender could be a legitimate recipient in some flows; assess manually."
         }
-      }).catch(() => {
-      });
+      ]
     };
-    g.__arcLensContent = true;
-    const pendingTx = /* @__PURE__ */ new Map();
-    window.addEventListener("message", onPageMessage);
-    chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-      if (msg?.msg === "RISK_RESULT") {
-        window.postMessage({ channel: PAGE_CHANNEL, type: "RISK_RESULT", ...msg }, "*");
-        sendResponse({ ok: true });
-        return true;
-      }
-      if (msg?.msg === "RISK_AI_EXTRA") {
-        window.postMessage(
-          { channel: PAGE_CHANNEL, type: "RISK_AI_EXTRA", uid: msg.uid, aiExplain: msg.aiExplain },
-          "*"
-        );
-        appendAiExplain(msg.uid, msg.aiExplain);
-        void chrome.storage.local.get("lastSummary").then((v) => {
-          const last = v?.lastSummary;
-          if (last?.uid === msg.uid) {
-            void chrome.storage.local.set({ lastSummary: plain({ ...last, aiExplain: msg.aiExplain }) });
-          }
-        });
-        sendResponse({ ok: true });
-        return true;
-      }
-      return false;
-    });
-  }
+    showOverlay({ summary, txTo: SPENDER_SIGNED });
+  });
 })();
-//# sourceMappingURL=content.js.map

@@ -34,12 +34,12 @@ const results: Record<string, boolean> = {}
 
 // Case 1: page shows address that matches requested `to` → no mismatch
 {
-  const holder = makeDoc(REAL_PAGE)
+  makeDoc(REAL_PAGE)
   results['matching-address-no-mismatch'] = !runMismatchCheck(document.body, SHOWN_ADDR).detected
 }
 // Case 2: page shows address A, wallet signs to B → mismatch severe
 {
-  const holder = makeDoc(REAL_PAGE)
+  makeDoc(REAL_PAGE)
   const m = runMismatchCheck(document.body, SIGNED_ADDR)
   results['different-address-detected'] = m.detected
   results['signed-address-captured'] = m.signedAddress === SIGNED_ADDR
@@ -47,20 +47,20 @@ const results: Record<string, boolean> = {}
 }
 // Case 3: DOM detection of the displayed address works
 {
-  const holder = makeDoc(REAL_PAGE)
+  makeDoc(REAL_PAGE)
   const shown = detectDisplayedAddress(document.body)
   results['shown-detected'] = (shown ?? '').toLowerCase() === SHOWN_ADDR.toLowerCase()
   results['label-found'] = (displayedLabel(document.body, shown ?? '') ?? '').includes('Pool Owner')
 }
 // Case 4: no displayed address at all (opaque page) → no mismatch flagged
 {
-  const holder = makeDoc('<h1>App</h1><div class="row">Sign in to continue</div>')
+  makeDoc('<h1>App</h1><div class="row">Sign in to continue</div>')
   results['no-address-no-mismatch'] = runMismatchCheck(document.body, SIGNED_ADDR).detected === false
 }
 
 // Case 5: overlay renders with mismatch — verify DOM structure in shadow root
 {
-  const holder = makeDoc(REAL_PAGE)
+  makeDoc(REAL_PAGE)
   const sampleFindings = [
     { id: 'unlimited-approval', severity: 'warning', rule: 'Unlimited approval', reason: 'This approval may allow the spender to use your USDC later.', evidence: 'max uint', limitation: 'x' },
   ]

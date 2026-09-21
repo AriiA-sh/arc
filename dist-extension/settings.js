@@ -22,15 +22,30 @@
     el.provider.value = s.aiProvider;
     el.apiKey.value = s.apiKey ?? "";
     el.network.value = s.network ?? "testnet";
-    el.chainId.value = String(s.expectedChainId ?? 5042002);
+    el.chainId.value = String(s.expectedChainId ?? (s.network === "mainnet" ? 5042 : 5042002));
   })();
+  el.network.addEventListener("change", () => {
+    const defaultChain = el.network.value === "mainnet" ? 5042 : 5042002;
+    if (Number(el.chainId.value) !== defaultChain && !el.chainId.dataset.touched) {
+      el.chainId.value = String(defaultChain);
+    }
+  });
+  el.chainId.addEventListener("input", () => {
+    el.chainId.dataset.touched = "true";
+  });
   el.save.addEventListener("click", () => {
     const expectedChainId = Number(el.chainId.value);
     const network = el.network.value === "mainnet" ? "mainnet" : "testnet";
+    const apiKey = el.apiKey.value.trim() || void 0;
+    if (el.provider.value !== "disabled" && apiKey) {
+      const origins = el.provider.value === "gemini" ? ["https://generativelanguage.googleapis.com/*"] : el.provider.value === "openai" ? ["https://api.openai.com/*"] : ["https://api.anthropic.com/*"];
+      chrome.permissions?.request?.({ origins }, () => {
+      });
+    }
     chrome.storage.local.set(
       {
         aiProvider: el.provider.value,
-        apiKey: el.apiKey.value.trim() || void 0,
+        apiKey,
         network,
         expectedChainId: Number.isFinite(expectedChainId) ? expectedChainId : network === "mainnet" ? 5042 : 5042002
       },

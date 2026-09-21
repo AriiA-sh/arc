@@ -5,10 +5,17 @@
   "description": "Understand → Warn → Explain. Transaction intelligence for Arc at the moment of signing.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://rpc.testnet.arc.io/*",
+    "https://rpc.mainnet.arc.io/*"
+  ],
+  "optional_host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -17,7 +24,12 @@
   "content_scripts": [
     {
       "matches": [
-        "<all_urls>"
+        "https://arc.io/*",
+        "https://*.arc.io/*",
+        "https://arc.network/*",
+        "https://*.arc.network/*",
+        "http://127.0.0.1/*",
+        "http://localhost/*"
       ],
       "js": [
         "injected.js"
@@ -27,7 +39,12 @@
     },
     {
       "matches": [
-        "<all_urls>"
+        "https://arc.io/*",
+        "https://*.arc.io/*",
+        "https://arc.network/*",
+        "https://*.arc.network/*",
+        "http://127.0.0.1/*",
+        "http://localhost/*"
       ],
       "js": [
         "content.js"

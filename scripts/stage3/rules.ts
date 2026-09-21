@@ -6,7 +6,6 @@ import type { DecodedAction } from '../../src/core/decoder/types'
 
 const TOKEN = '0x1111111111111111111111111111111111111111'
 const SIGNER = '0x2222222222222222222222222222222222222222'
-const HOLDER = '0x3333333333333333333333333333333333333333'
 const RECIPIENT = '0x4444444444444444444444444444444444444444'
 const SPENDER_CONTRACT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const SPENDER_EOA = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'

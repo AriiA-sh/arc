@@ -25,7 +25,7 @@ type CapturedCall = { url: string; method?: string; headers?: Record<string, str
 const calls: CapturedCall[] = []
 
 async function withMockFetch(
-  responder: (url: string, init: any) => Promise<any>,
+  responder: (url: string, init: any) => any,
   fn: () => Promise<void>,
 ): Promise<void> {
   const real = globalThis.fetch
@@ -49,7 +49,7 @@ await withMockFetch(
     check('gemini: parses text', r.ok && r.text === 'Gemini plain text.', JSON.stringify(r))
     const call = calls[calls.length - 1]
     check('gemini: key in URL not header', call.url.includes('key=k123') && !('Authorization' in call.headers!), call.url)
-    const prompt = JSON.parse(call.body).contents[0].parts[0].text
+    const prompt = JSON.parse(call.body ?? '').contents[0].parts[0].text
     check('gemini: prompt has no api key inside', !prompt.includes('k123') && prompt.includes('Approve token'))
   },
 )

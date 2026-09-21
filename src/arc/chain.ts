@@ -6,9 +6,10 @@ import type { Chain } from 'viem'
  * mirror https://docs.arc.network/...). Re-verify before any production use
  * (Project Bible Rule 9).
  *
- * Mainnet is currently in a PERMISSIONED private phase: rpc.mainnet.arc.io
- * requires credentials. Arc Lens ships testnet-first; mainnet is selectable in
- * settings only when a user opts in.
+ * Arc Mainnet went PUBLIC on September 16, 2026 (arc.io blog, confirmed
+ * 2026-09-21): rpc.mainnet.arc.io is open to all developers and the
+ * permissioned-only phase has ended. Testnet remains the shipped default;
+ * mainnet is a user choice in settings.
  */
 export const arcTestnet = {
   id: 5042002,
@@ -44,3 +45,4 @@ export const ARC_CHAINS: Record<ArcNetwork, Chain> = {
 }
 
 export const ARC_CHAIN_ID = arcTestnet.id
+export const ARC_MAINNET_CHAIN_ID = arcMainnet.id

@@ -8,6 +8,8 @@ export interface WalletStatus {
   networkLabel?: string
   /** true when connected to Arc Testnet */
   onArcTestnet: boolean
+  /** true when connected to Arc Mainnet (public since 2026-09-16) */
+  onArcMainnet?: boolean
   error?: string
 }
 

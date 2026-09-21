@@ -34,6 +34,11 @@ if (manifest) {
   check('name/version set', !!manifest.name && !!manifest.version, `${manifest.name} ${manifest.version}`)
   check('background points at bundle', manifest.background?.service_worker === 'background.js', JSON.stringify(manifest.background))
   check('injected MAIN + content ISOLATED', manifest.content_scripts?.length === 2 && !manifest.content_scripts.some((cs) => !cs.world), JSON.stringify(manifest.content_scripts))
+  check('NO <all_urls> host permission', !(manifest.host_permissions ?? []).includes('<all_urls>'), JSON.stringify(manifest.host_permissions))
+  check('scripting + activeTab present (on-demand activation)', manifest.permissions?.includes('scripting') && manifest.permissions?.includes('activeTab'), JSON.stringify(manifest.permissions))
+  check('only Arc RPCs in host_permissions', (manifest.host_permissions ?? []).every((h) => h.startsWith('https://rpc.')), JSON.stringify(manifest.host_permissions))
+  check('AI hosts are OPTIONAL permissions', manifest.optional_host_permissions?.length === 3, JSON.stringify(manifest.optional_host_permissions))
+  check('auto-inject restricted to Arc/localhost', manifest.content_scripts.every((cs) => cs.matches.every((m) => m.includes('arc.io') || m.includes('arc.network') || m.includes('127.0.0.1') || m.includes('localhost'))), JSON.stringify(manifest.content_scripts[0]?.matches))
   check('popup + options wired', manifest.action?.default_popup === 'popup.html' && manifest.options_ui?.page === 'settings.html', JSON.stringify(manifest.options_ui))
 }
 

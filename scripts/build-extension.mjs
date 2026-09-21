@@ -48,18 +48,45 @@ const manifest = {
   name: 'Arc Lens',
   version: '0.1.0',
   description: 'Understand → Warn → Explain. Transaction intelligence for Arc at the moment of signing.',
-  permissions: ['storage', 'activeTab'],
-  host_permissions: ['<all_urls>'],
+  // Privacy-first: no <all_urls>. The extension reaches out only to Arc's own
+  // public RPCs, injects content scripts only on Arc-owned domains (and the
+  // local dev harness), and on any other site the user MUST click the action
+  // icon first (activeTab + scripting). AI endpoints are optional, requested
+  // at runtime only when the user saves an AI provider+key (see settings.ts).
+  permissions: ['storage', 'activeTab', 'scripting'],
+  host_permissions: [
+    'https://rpc.testnet.arc.io/*',
+    'https://rpc.mainnet.arc.io/*',
+  ],
+  optional_host_permissions: [
+    'https://generativelanguage.googleapis.com/*',
+    'https://api.openai.com/*',
+    'https://api.anthropic.com/*',
+  ],
   background: { service_worker: 'background.js', type: 'module' },
   content_scripts: [
     {
-      matches: ['<all_urls>'],
+      matches: [
+        'https://arc.io/*',
+        'https://*.arc.io/*',
+        'https://arc.network/*',
+        'https://*.arc.network/*',
+        'http://127.0.0.1/*',
+        'http://localhost/*',
+      ],
       js: ['injected.js'],
       run_at: 'document_start',
       world: 'MAIN',
     },
     {
-      matches: ['<all_urls>'],
+      matches: [
+        'https://arc.io/*',
+        'https://*.arc.io/*',
+        'https://arc.network/*',
+        'https://*.arc.network/*',
+        'http://127.0.0.1/*',
+        'http://localhost/*',
+      ],
       js: ['content.js'],
       run_at: 'document_start',
       world: 'ISOLATED',
@@ -97,7 +124,9 @@ const BUILTIN_POPUP_HTML = `<!doctype html>
 </head>
 <body>
   <h1>ARC LENS</h1>
-  <div id="arc-popup-root" class="muted">Waiting…</div>
+  <div id="arc-status" class="muted">Checking…</div>
+  <button class="btn" id="arc-activate" hidden>Enable on this page</button>
+  <div id="arc-popup-root" class="muted" style="margin-top:12px">Waiting…</div>
   <a class="btn" id="arc-open-settings" href="#">Settings</a>
   <script src="popup.js"></script>
 </body>
@@ -136,11 +165,11 @@ const BUILTIN_SETTINGS_HTML = `<!doctype html>
   <label for="network">Network</label>
   <select id="network">
     <option value="testnet">Arc Testnet (5042002)</option>
-    <option value="mainnet" disabled>Arc Mainnet (5042 — permissioned, unavailable)</option>
+    <option value="mainnet">Arc Mainnet (5042 — public)</option>
   </select>
   <label for="expectedChainId">Expected chain id</label>
   <input id="expectedChainId" type="number" value="5042002" />
-  <div class="note">Arc Lens never stores private keys or seed phrases. Your API key is local to this browser.</div>
+  <div class="note">Arc Lens never stores private keys or seed phrases. Your API key is local to this browser. Saving an AI provider makes Chrome ask once for access to that provider's API host only.</div>
   <button class="save" id="save">Save</button>
   <div id="status"></div>
   <script src="settings.js"></script>

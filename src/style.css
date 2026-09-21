@@ -104,6 +104,17 @@ body {
   font-size: 0.75rem;
 }
 
+.btn-connect {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.btn-connect:hover { border-color: var(--info); }
+.btn-connect:disabled { opacity: 0.6; cursor: progress; }
 .ok { color: var(--info); }
 .bad { color: var(--severe); }
 .muted { color: var(--muted); font-size: 0.75rem; }

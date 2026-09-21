@@ -9,8 +9,7 @@ async function main() {
     total += b.transactions.length
     console.log(`block ${num - i}: ${b.transactions.length} txns`)
     if (sample.length === 0 && b.transactions.length > 0) {
-      const t = b.transactions[0]
-      sample.push(typeof t === 'string' ? t : t.hash)
+      sample.push(b.transactions[0])
     }
   }
   console.log(`total txns in 10 blocks: ${total}`)

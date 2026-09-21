@@ -2,6 +2,12 @@ import { PAGE_CHANNEL, type InjectedOutbound } from '../channel'
 import { showOverlay, appendAiExplain } from './overlay'
 import { plain } from '../plain'
 
+// The popup may inject content.js again via scripting.executeScript (on-demand
+// activation). Guard so listeners/overlays are never registered twice.
+const g = globalThis as unknown as { __arcLensContent?: boolean }
+if (!g.__arcLensContent) {
+  g.__arcLensContent = true
+
 /**
  * ISOLATED-world bridge. Receives TX_CAPTURED from the MAIN-world injected
  * script via window.postMessage and forwards it to the background service
@@ -62,3 +68,4 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
   return false
 })
+}
